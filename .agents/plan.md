@@ -376,6 +376,33 @@ A dedicated, protected management portal (`/admin`) for Techfiyr administrators:
   - Wired subject identification and scene description into [translateAnalysisStructured()](file:///Users/metastudio/saurav/development/workspaces/explainer/src/services/geminiService.js) for seamless in-place translation into Bengali, Hindi, Spanish, French, German, and Arabic.
   - Extended soft female voice narration to speak the identified subject demeanor before diving into emotional core and behavioral dynamics.
 
+### Phase 16: Localized Infographic Card & Per-Card Smooth Voice Narration (Bengali Voice Fix)
+- [x] **Language-Aware Dynamic Infographic Card Generator**:
+  - Updated `AnalysisView.jsx` `handleDownloadCard` to pass `activeData` (translated analysis) and current language/labels instead of static English `analysis`.
+  - Updated `cardGenerator.js` with localized titles, badges, tension meters, and footer watermarks for all supported languages (Bengali, Hindi, Spanish, French, German, Arabic, English).
+  - Added Unicode / Bengali-safe canvas font stack (`"Plus Jakarta Sans", "Noto Sans Bengali", "SolaimanLipi", "Hind Siliguri", "Bangla", system-ui, sans-serif`) for clear glyph rendering.
+  - Integrated Subject & Person Demeanor into the infographic card layout.
+- [x] **Bengali Voice Playback Bug Fix**:
+  - Fixed voice selection in `speechService.js`: Never assigns an English fallback voice to non-English text (prevents silent fail / crash on Bengali Unicode).
+  - Mapped and supported both `bn-BD` and `bn-IN` dialect codes so systems with `Piya` (`bn_IN`) or `Google বাংলা` (`bn-BD`) play smoothly.
+  - Set `utterance.lang` to match the resolved voice's native language code.
+  - Guarded against Chrome race condition (`cancel()` followed immediately by `speak()`) using a micro-delay.
+- [x] **Per-Card Voice Player Architecture (Eliminate Clumsy Global Voice Button)**:
+  - Removed the global voice button from the top navigation bar to prevent speaking a massive concatenated string that breaks browser speech limits.
+  - Placed smooth, dedicated "Listen" / "Stop" toggle buttons directly on each individual card header:
+    1. *Subject & Person Identification*
+    2. *Full Picture & Visual Context*
+    3. *Dominant Emotional Core & Atmosphere*
+    4. *Behavioral Dynamics & Body Language*
+    5. *Chromatic & Spatial Vibe*
+    6. *Reflection Prompt*
+  - Added localized labels in `CARD_LABELS` for the audio toggle (e.g. English: `Listen` / `Stop`, Bengali: `শুনুন` / `থামুন`, Hindi: `सुनें` / `रोकें`).
+  - Active playing indicator on the card being narrated with 1-click stop.
+- [x] **Offline Translation Completeness**:
+  - Added fallback translations for `subjectIdentification` and `sceneDescription` in `getOfflineStructuredTranslation` for Bengali and Hindi.
+
+---
+
 - [x] Product ownership defined: Licensed product of Techfiyr (techfiyr.com).
 - [x] Billing infrastructure defined: RevenueCat unified cross-platform billing.
 - [x] Credit model defined (3 free daily, 10 welcome credits, $1=100 credits, $1/mo, $9.99/yr).
@@ -391,5 +418,6 @@ A dedicated, protected management portal (`/admin`) for Techfiyr administrators:
 - [x] Admin dashboard defined (API key pool, pricing, user moderation, GA4, offers, leaderboards).
 - [x] Environment API key registered in `.env`.
 - [x] User approval on `.agents/plan.md` received.
+
 
 

@@ -44,6 +44,8 @@ const CARD_LABELS = {
     colorTitle: 'Color & Composition Psychology',
     reflectionLabel: 'Introspective Query',
     deepDiveTitle: 'Explore Psychological Nuances:',
+    listenLabel: 'Listen',
+    stopLabel: 'Stop',
   },
   Bengali: {
     subjectEyebrow: 'ব্যক্তি ও চরিত্র সনাক্তকরণ',
@@ -60,6 +62,8 @@ const CARD_LABELS = {
     colorTitle: 'শিল্পকলা ও রঙের মনস্তত্ত্ব',
     reflectionLabel: 'আত্মচিন্তার প্রশ্ন',
     deepDiveTitle: 'মনস্তাত্ত্বিক গভীরতা অন্বেষণ করুন:',
+    listenLabel: 'শুনুন',
+    stopLabel: 'থামুন',
   },
   Hindi: {
     subjectEyebrow: 'व्यक्ति एवं विषय की पहचान',
@@ -76,6 +80,8 @@ const CARD_LABELS = {
     colorTitle: 'कला एवं रंग मनोविज्ञान',
     reflectionLabel: 'चिंतन प्रश्न',
     deepDiveTitle: 'मनोवैज्ञानिक सूक्ष्मताओं का अन्वेषण करें:',
+    listenLabel: 'सुनें',
+    stopLabel: 'रोकें',
   },
   Spanish: {
     subjectEyebrow: 'IDENTIFICACIÓN DEL SUJETO',
@@ -92,6 +98,8 @@ const CARD_LABELS = {
     colorTitle: 'Psicología del Color y Composición',
     reflectionLabel: 'Consulta Introspectiva',
     deepDiveTitle: 'Explorar Matices Psicológicos:',
+    listenLabel: 'Escuchar',
+    stopLabel: 'Detener',
   },
   French: {
     subjectEyebrow: 'IDENTIFICATION DU SUJET',
@@ -108,6 +116,8 @@ const CARD_LABELS = {
     colorTitle: 'Psychologie des Couleurs et de la Composition',
     reflectionLabel: 'Interrogation Introspective',
     deepDiveTitle: 'Explorer les Nuances Psychologiques :',
+    listenLabel: 'Écouter',
+    stopLabel: 'Arrêter',
   },
   German: {
     subjectEyebrow: 'SUBJEKT- & PERSONENIDENTIFIKATION',
@@ -124,6 +134,8 @@ const CARD_LABELS = {
     colorTitle: 'Farb- und Kompositionspsychologie',
     reflectionLabel: 'Introspektive Frage',
     deepDiveTitle: 'Psychologische Nuancen Erkunden:',
+    listenLabel: 'Anhören',
+    stopLabel: 'Stopp',
   },
   Arabic: {
     subjectEyebrow: 'تحديد الشخصية والموضوع',
@@ -140,6 +152,8 @@ const CARD_LABELS = {
     colorTitle: 'سيكولوجية الألوان والتكوين الفني',
     reflectionLabel: 'تساؤل استبطاني',
     deepDiveTitle: 'استكشاف الفروق النفسية الدقيقة:',
+    listenLabel: 'استمع',
+    stopLabel: 'إيقاف',
   },
 };
 
@@ -155,8 +169,8 @@ export default function AnalysisView({
   const initialDetected = geoLanguageService.getDetectedLanguage();
   const detectedCountry = geoLanguageService.getDetectedCountry();
 
-  // Default strictly to English as requested
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  // Selected language and translation state
+  const [playingCardId, setPlayingCardId] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [selectedLangCode, setSelectedLangCode] = useState('en-US');
   const [isTranslating, setIsTranslating] = useState(false);
@@ -183,31 +197,29 @@ export default function AnalysisView({
     };
   }, []);
 
-  const toggleSpeech = () => {
-    if (isPlayingAudio) {
+  // Per-card speech narration handler
+  const handlePlayCard = (cardId, text) => {
+    if (playingCardId === cardId) {
       speechService.stop();
-      setIsPlayingAudio(false);
-    } else {
-      setIsPlayingAudio(true);
-      const textToSpeak = [
-        activeData.subjectIdentification ? `${activeData.subjectIdentification}.` : '',
-        activeData.mood?.primary ? `${activeData.mood.primary}.` : '',
-        activeData.mood?.atmosphere ? `${currentLabels.atmosphereLabel}: ${activeData.mood.atmosphere}.` : '',
-        activeData.psychologicalSubtext || '',
-        activeData.artisticPsychology || '',
-        activeData.reflectionPrompt || '',
-      ]
-        .filter(Boolean)
-        .join(' ');
-
-      speechService.speak(textToSpeak, {
-        lang: selectedLangCode,
-        rate: 0.88, // soft, contemplative pace
-        pitch: 1.08, // soft feminine warm tone
-        onEnd: () => setIsPlayingAudio(false),
-        onError: () => setIsPlayingAudio(false),
-      });
+      setPlayingCardId(null);
+      return;
     }
+
+    if (!text || text.trim() === '') return;
+
+    speechService.stop();
+    setPlayingCardId(cardId);
+
+    speechService.speak(text, {
+      lang: selectedLangCode,
+      rate: 0.88, // soft contemplative pace
+      pitch: 1.08, // soft feminine warm tone
+      onEnd: () => setPlayingCardId(null),
+      onError: (err) => {
+        console.warn('Card audio playback error:', err);
+        setPlayingCardId(null);
+      },
+    });
   };
 
   const handleLanguageChange = async (e) => {
@@ -217,10 +229,9 @@ export default function AnalysisView({
     setSelectedLangCode(targetObj.code);
     geoLanguageService.setPreferredLanguage(targetObj.shortName);
 
-    if (isPlayingAudio) {
-      speechService.stop();
-      setIsPlayingAudio(false);
-    }
+    // Stop ongoing card audio upon language switch
+    speechService.stop();
+    setPlayingCardId(null);
 
     if (targetObj.shortName === 'English') {
       return;
@@ -261,7 +272,11 @@ export default function AnalysisView({
   const handleDownloadCard = async () => {
     setIsGeneratingCard(true);
     try {
-      await generateAndDownloadCard(imageObject.dataUrl, analysis);
+      // Pass the active localized data, language, and labels so translated cards download accurately
+      await generateAndDownloadCard(imageObject.dataUrl, activeData, {
+        language: selectedLanguage,
+        labels: currentLabels,
+      });
       confetti({
         particleCount: 50,
         spread: 60,
@@ -286,18 +301,6 @@ export default function AnalysisView({
         </button>
 
         <div className="right-tools">
-          {/* TTS Audio Narration Toggle */}
-          <button
-            id="btn-voice-narration"
-            className={`btn-secondary ${isPlayingAudio ? 'active-audio' : ''}`}
-            onClick={toggleSpeech}
-            title={`Listen in ${selectedLanguage} (Soft Female Voice)`}
-          >
-            {isPlayingAudio ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            <span>{isPlayingAudio ? 'Mute Voice' : selectedLanguage !== 'English' ? `Voice Play (${selectedLanguage})` : 'Voice Play'}</span>
-            {isPlayingAudio && <span className="sound-wave" />}
-          </button>
-
           {/* Multilingual Selector with Country Flag & Auto-Detection */}
           <div className="language-selector-wrap" title={`Detected country: ${detectedCountry}`}>
             <Languages size={15} className="lang-icon" />
@@ -306,6 +309,7 @@ export default function AnalysisView({
               onChange={handleLanguageChange}
               disabled={isTranslating}
               className="lang-select"
+              aria-label="Select Language"
             >
               {SUPPORTED_LANGUAGES.map((l) => (
                 <option key={l.code} value={l.shortName}>
@@ -414,14 +418,26 @@ export default function AnalysisView({
           {/* 1. Subject & Person Identification Card */}
           {activeData.subjectIdentification && (
             <div className="glass-card section-card">
-              <div className="section-header">
-                <div className="section-icon-badge badge-cyan-glow">
-                  <UserCheck size={20} color="#06b6d4" />
+              <div className="section-header-row">
+                <div className="section-header">
+                  <div className="section-icon-badge badge-cyan-glow">
+                    <UserCheck size={20} color="#06b6d4" />
+                  </div>
+                  <div>
+                    <span className="section-eyebrow">{currentLabels.subjectEyebrow}</span>
+                    <h3 className="section-title font-display">{currentLabels.subjectTitle}</h3>
+                  </div>
                 </div>
-                <div>
-                  <span className="section-eyebrow">{currentLabels.subjectEyebrow}</span>
-                  <h3 className="section-title font-display">{currentLabels.subjectTitle}</h3>
-                </div>
+                <button
+                  className={`card-listen-btn ${playingCardId === 'subject' ? 'is-playing' : ''}`}
+                  onClick={() => handlePlayCard('subject', `${currentLabels.subjectTitle}. ${activeData.subjectIdentification}`)}
+                  title={`${playingCardId === 'subject' ? currentLabels.stopLabel : currentLabels.listenLabel} (${selectedLanguage})`}
+                  aria-label={`${playingCardId === 'subject' ? currentLabels.stopLabel : currentLabels.listenLabel} Subject Identification`}
+                >
+                  {playingCardId === 'subject' ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                  <span>{playingCardId === 'subject' ? currentLabels.stopLabel : currentLabels.listenLabel}</span>
+                  {playingCardId === 'subject' && <span className="sound-wave mini" />}
+                </button>
               </div>
               <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>
                 {activeData.subjectIdentification}
@@ -432,14 +448,26 @@ export default function AnalysisView({
           {/* 2. Full Picture & Visual Context Card */}
           {activeData.sceneDescription && (
             <div className="glass-card section-card">
-              <div className="section-header">
-                <div className="section-icon-badge badge-indigo-glow">
-                  <ImageIcon size={20} color="#6366f1" />
+              <div className="section-header-row">
+                <div className="section-header">
+                  <div className="section-icon-badge badge-indigo-glow">
+                    <ImageIcon size={20} color="#6366f1" />
+                  </div>
+                  <div>
+                    <span className="section-eyebrow">{currentLabels.sceneEyebrow}</span>
+                    <h3 className="section-title font-display">{currentLabels.sceneTitle}</h3>
+                  </div>
                 </div>
-                <div>
-                  <span className="section-eyebrow">{currentLabels.sceneEyebrow}</span>
-                  <h3 className="section-title font-display">{currentLabels.sceneTitle}</h3>
-                </div>
+                <button
+                  className={`card-listen-btn ${playingCardId === 'scene' ? 'is-playing' : ''}`}
+                  onClick={() => handlePlayCard('scene', `${currentLabels.sceneTitle}. ${activeData.sceneDescription}`)}
+                  title={`${playingCardId === 'scene' ? currentLabels.stopLabel : currentLabels.listenLabel} (${selectedLanguage})`}
+                  aria-label={`${playingCardId === 'scene' ? currentLabels.stopLabel : currentLabels.listenLabel} Visual Context`}
+                >
+                  {playingCardId === 'scene' ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                  <span>{playingCardId === 'scene' ? currentLabels.stopLabel : currentLabels.listenLabel}</span>
+                  {playingCardId === 'scene' && <span className="sound-wave mini" />}
+                </button>
               </div>
               <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>
                 {activeData.sceneDescription}
@@ -449,16 +477,28 @@ export default function AnalysisView({
 
           {/* 3. Mood & Atmosphere Card */}
           <div className="glass-card section-card">
-            <div className="section-header">
-              <div className="section-icon-badge badge-purple-glow">
-                <Sparkles size={20} color="#c4b5fd" />
+            <div className="section-header-row">
+              <div className="section-header">
+                <div className="section-icon-badge badge-purple-glow">
+                  <Sparkles size={20} color="#c4b5fd" />
+                </div>
+                <div>
+                  <span className="section-eyebrow">{currentLabels.dominantEyebrow}</span>
+                  <h3 className="section-title font-display gradient-text">
+                    {activeData.mood?.primary || 'Introspective Contemplation'}
+                  </h3>
+                </div>
               </div>
-              <div>
-                <span className="section-eyebrow">{currentLabels.dominantEyebrow}</span>
-                <h3 className="section-title font-display gradient-text">
-                  {activeData.mood?.primary || 'Introspective Contemplation'}
-                </h3>
-              </div>
+              <button
+                className={`card-listen-btn ${playingCardId === 'mood' ? 'is-playing' : ''}`}
+                onClick={() => handlePlayCard('mood', `${currentLabels.dominantEyebrow}: ${activeData.mood?.primary || ''}. ${activeData.overview || ''}. ${currentLabels.atmosphereLabel}: ${activeData.mood?.atmosphere || ''}.`)}
+                title={`${playingCardId === 'mood' ? currentLabels.stopLabel : currentLabels.listenLabel} (${selectedLanguage})`}
+                aria-label={`${playingCardId === 'mood' ? currentLabels.stopLabel : currentLabels.listenLabel} Mood and Atmosphere`}
+              >
+                {playingCardId === 'mood' ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                <span>{playingCardId === 'mood' ? currentLabels.stopLabel : currentLabels.listenLabel}</span>
+                {playingCardId === 'mood' && <span className="sound-wave mini" />}
+              </button>
             </div>
 
             <p className="overview-text" style={{ fontSize: '0.96rem', lineHeight: '1.7' }}>{activeData.overview}</p>
@@ -502,28 +542,52 @@ export default function AnalysisView({
 
           {/* Body Language & Micro-Expressions Card */}
           <div className="glass-card section-card">
-            <div className="section-header">
-              <div className="section-icon-badge badge-indigo-glow">
-                <Brain size={20} color="#818cf8" />
+            <div className="section-header-row">
+              <div className="section-header">
+                <div className="section-icon-badge badge-indigo-glow">
+                  <Brain size={20} color="#818cf8" />
+                </div>
+                <div>
+                  <span className="section-eyebrow">{currentLabels.behaviorEyebrow}</span>
+                  <h3 className="section-title font-display">{currentLabels.behaviorTitle}</h3>
+                </div>
               </div>
-              <div>
-                <span className="section-eyebrow">{currentLabels.behaviorEyebrow}</span>
-                <h3 className="section-title font-display">{currentLabels.behaviorTitle}</h3>
-              </div>
+              <button
+                className={`card-listen-btn ${playingCardId === 'behavior' ? 'is-playing' : ''}`}
+                onClick={() => handlePlayCard('behavior', `${currentLabels.behaviorTitle}. ${activeData.psychologicalSubtext || ''}`)}
+                title={`${playingCardId === 'behavior' ? currentLabels.stopLabel : currentLabels.listenLabel} (${selectedLanguage})`}
+                aria-label={`${playingCardId === 'behavior' ? currentLabels.stopLabel : currentLabels.listenLabel} Body Language`}
+              >
+                {playingCardId === 'behavior' ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                <span>{playingCardId === 'behavior' ? currentLabels.stopLabel : currentLabels.listenLabel}</span>
+                {playingCardId === 'behavior' && <span className="sound-wave mini" />}
+              </button>
             </div>
             <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>{activeData.psychologicalSubtext}</p>
           </div>
 
           {/* Artistic & Color Psychology Card */}
           <div className="glass-card section-card">
-            <div className="section-header">
-              <div className="section-icon-badge badge-cyan-glow">
-                <Palette size={20} color="#67e8f9" />
+            <div className="section-header-row">
+              <div className="section-header">
+                <div className="section-icon-badge badge-cyan-glow">
+                  <Palette size={20} color="#67e8f9" />
+                </div>
+                <div>
+                  <span className="section-eyebrow">{currentLabels.colorEyebrow}</span>
+                  <h3 className="section-title font-display">{currentLabels.colorTitle}</h3>
+                </div>
               </div>
-              <div>
-                <span className="section-eyebrow">{currentLabels.colorEyebrow}</span>
-                <h3 className="section-title font-display">{currentLabels.colorTitle}</h3>
-              </div>
+              <button
+                className={`card-listen-btn ${playingCardId === 'color' ? 'is-playing' : ''}`}
+                onClick={() => handlePlayCard('color', `${currentLabels.colorTitle}. ${activeData.artisticPsychology || ''}`)}
+                title={`${playingCardId === 'color' ? currentLabels.stopLabel : currentLabels.listenLabel} (${selectedLanguage})`}
+                aria-label={`${playingCardId === 'color' ? currentLabels.stopLabel : currentLabels.listenLabel} Color Psychology`}
+              >
+                {playingCardId === 'color' ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                <span>{playingCardId === 'color' ? currentLabels.stopLabel : currentLabels.listenLabel}</span>
+                {playingCardId === 'color' && <span className="sound-wave mini" />}
+              </button>
             </div>
             <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>{activeData.artisticPsychology}</p>
           </div>
@@ -531,7 +595,19 @@ export default function AnalysisView({
           {/* Reflection Prompt */}
           {activeData.reflectionPrompt && (
             <div className="reflection-card glass-card">
-              <span className="reflection-label font-display">{currentLabels.reflectionLabel}</span>
+              <div className="section-header-row" style={{ marginBottom: '10px' }}>
+                <span className="reflection-label font-display">{currentLabels.reflectionLabel}</span>
+                <button
+                  className={`card-listen-btn ${playingCardId === 'reflection' ? 'is-playing' : ''}`}
+                  onClick={() => handlePlayCard('reflection', `${currentLabels.reflectionLabel}. ${activeData.reflectionPrompt}`)}
+                  title={`${playingCardId === 'reflection' ? currentLabels.stopLabel : currentLabels.listenLabel} (${selectedLanguage})`}
+                  aria-label={`${playingCardId === 'reflection' ? currentLabels.stopLabel : currentLabels.listenLabel} Reflection Prompt`}
+                >
+                  {playingCardId === 'reflection' ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                  <span>{playingCardId === 'reflection' ? currentLabels.stopLabel : currentLabels.listenLabel}</span>
+                  {playingCardId === 'reflection' && <span className="sound-wave mini" />}
+                </button>
+              </div>
               <p className="reflection-quote" style={{ fontSize: '1.05rem', lineHeight: '1.65' }}>"{activeData.reflectionPrompt}"</p>
             </div>
           )}
@@ -735,6 +811,54 @@ export default function AnalysisView({
           border-radius: var(--radius-lg);
           box-shadow: var(--shadow-card);
           padding: 24px;
+        }
+        .section-header-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .section-header-row .section-header {
+          margin-bottom: 0;
+          flex: 1;
+        }
+        .card-listen-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: var(--radius-full);
+          color: #334155;
+          font-size: 0.82rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .card-listen-btn:hover {
+          background: #f8fafc;
+          border-color: #94a3b8;
+          color: #0f172a;
+          transform: translateY(-1px);
+        }
+        .card-listen-btn.is-playing {
+          background: #0f172a;
+          border-color: #0f172a;
+          color: #ffffff;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+        }
+        .sound-wave.mini {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #10b981;
+          animation: pulseGlow 1s infinite;
         }
         .section-header {
           display: flex;

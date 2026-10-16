@@ -42,6 +42,26 @@ class SpeechService {
     // 1. Candidate voices for the selected language
     const langCandidates = allVoices.filter((v) => {
       const vLang = (v.lang || '').toLowerCase().replace('_', '-');
+      const vName = (v.name || '').toLowerCase();
+      if (basePrefix === 'bn') {
+        return (
+          vLang.startsWith('bn') ||
+          vLang.startsWith('ben') ||
+          vName.includes('bengali') ||
+          vName.includes('bangla') ||
+          vName.includes('piya') ||
+          vName.includes('tanishaa')
+        );
+      }
+      if (basePrefix === 'hi') {
+        return (
+          vLang.startsWith('hi') ||
+          vLang.startsWith('hin') ||
+          vName.includes('hindi') ||
+          vName.includes('lekha') ||
+          vName.includes('swara')
+        );
+      }
       return vLang.startsWith(basePrefix);
     });
 
@@ -108,8 +128,13 @@ class SpeechService {
       return langCandidates[0];
     }
 
-    // Fallback: If device lacks installed voices for this language,
-    // find the best soft female voice on the system
+    // Critical: If non-English language and no voice candidate found,
+    // DO NOT force an English voice on non-English text (prevents silent fail/crash).
+    if (basePrefix !== 'en') {
+      return null;
+    }
+
+    // For English: fallback to best soft female system voice
     const allSorted = [...allVoices].sort((a, b) => scoreVoice(b, false) - scoreVoice(a, false));
     return allSorted[0] || allVoices[0];
   }
@@ -120,13 +145,17 @@ class SpeechService {
   speak(text, options = {}) {
     if (!this.synth) {
       console.warn('Speech synthesis not supported in this browser.');
+      if (options.onError) options.onError(new Error('Speech synthesis unsupported'));
       return;
     }
 
     // Cancel ongoing speech
     this.stop();
 
-    if (!text || text.trim() === '') return;
+    if (!text || text.trim() === '') {
+      if (options.onEnd) options.onEnd();
+      return;
+    }
 
     // Clean markdown, brackets, and code syntax so it sounds completely conversational
     const cleanSpokenText = text
@@ -142,19 +171,57 @@ class SpeechService {
     utterance.rate = options.rate || 0.88;
     // Pitch of 1.08 gives a warm, gentle feminine soft resonance
     utterance.pitch = options.pitch || 1.08;
-    utterance.lang = options.lang || 'en-US';
 
-    const softFemaleVoice = this.findBestFemaleSoftVoice(utterance.lang);
+    const requestedLang = options.lang || 'en-US';
+    const softFemaleVoice = this.findBestFemaleSoftVoice(requestedLang);
+
     if (softFemaleVoice) {
       utterance.voice = softFemaleVoice;
+      utterance.lang = softFemaleVoice.lang || requestedLang;
+    } else {
+      // If no specific voice model was detected, set standard lang code for native OS synthesis
+      utterance.lang = requestedLang;
+      // Bengali dialect fallback: if requested bn-BD and OS only knows bn-IN (common on macOS/iOS)
+      if (requestedLang.toLowerCase().startsWith('bn')) {
+        utterance.lang = 'bn-IN';
+      }
     }
 
+    let hasEnded = false;
+    const safeEnd = () => {
+      if (!hasEnded) {
+        hasEnded = true;
+        this.currentUtterance = null;
+        if (options.onEnd) options.onEnd();
+      }
+    };
+
+    const safeError = (err) => {
+      if (!hasEnded) {
+        hasEnded = true;
+        this.currentUtterance = null;
+        if (options.onError) options.onError(err);
+      }
+    };
+
     if (options.onStart) utterance.onstart = options.onStart;
-    if (options.onEnd) utterance.onend = options.onEnd;
-    if (options.onError) utterance.onerror = options.onError;
+    utterance.onend = safeEnd;
+    utterance.onerror = safeError;
 
     this.currentUtterance = utterance;
-    this.synth.speak(utterance);
+
+    // Small delay prevents Chrome race condition when calling speak() right after cancel()
+    setTimeout(() => {
+      try {
+        if (this.synth.paused) {
+          this.synth.resume();
+        }
+        this.synth.speak(utterance);
+      } catch (err) {
+        console.warn('SpeechSynthesis speak failed:', err);
+        safeError(err);
+      }
+    }, 40);
   }
 
   pause() {
@@ -171,7 +238,11 @@ class SpeechService {
 
   stop() {
     if (this.synth) {
-      this.synth.cancel();
+      try {
+        this.synth.cancel();
+      } catch (e) {
+        // ignore
+      }
       this.currentUtterance = null;
     }
   }
