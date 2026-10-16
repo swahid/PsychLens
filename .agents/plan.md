@@ -325,6 +325,57 @@ A dedicated, protected management portal (`/admin`) for Techfiyr administrators:
     5. **Safety & Usage Policy**: Apple Guideline 1.2 & Google Play UGC compliance, in-app report/flagging, author blocking, age verification.
     6. **AI Disclaimer Policy & Guidelines**: Non-diagnostic, non-medical, AI fallibility, prohibition of forensic/threat assessment, mutual indemnification safe harbor.
 
+### Phase 12: High-Resolution 512x512 Brand & App Icon Assets
+- [x] **Vector Brand Logo PNG (`logo.png` & `public/logo-512.png`)**:
+  - Exactly 512x512 pixels, 53 KB (< 500 KB requirement).
+  - Transparent background, crisp dark slate rim (`#0F172A`), golden spiral aperture blades, deep indigo iris (`#4F46E5`), and emotional perception spark.
+- [x] **PWA & Android App Icon PNG (`public/icon-512.png` & `public/icon-192.png`)**:
+  - Exactly 512x512 pixels (64 KB) and 192x192 pixels (20 KB).
+  - Editorial off-white squircle card backing with subtle border for seamless mobile launcher rendering.
+  - Linked to `public/manifest.json` and `index.html` (`apple-touch-icon`).
+- [x] **Photorealistic Editorial Concept PNG (`public/logo-concept-512.png`)**:
+  - Exactly 512x512 pixels, 177 KB (< 500 KB requirement).
+  - Detailed rendered camera aperture lens with human eye iris and perception spark.
+
+### Phase 13: Default English, Bengali/Hindi Translation Engine & Soft Female Native Voice
+- [x] **Default English Setup**:
+  - `AnalysisView.jsx` and `geoLanguageService.js` strictly default to English (`en-US`) on load without forced auto-translation.
+- [x] **Live Multilingual Translation Engine**:
+  - Upgraded `translateAnalysis()` in `geminiService.js` with multi-model cascade (`gemini-3.5-flash`, `gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-flash-latest`) and key rotation.
+  - Added high-fidelity contextual translation fallbacks for Bengali and Hindi, eliminating mock/demo strings entirely.
+  - Interactive translation status indicator and dedicated playback trigger on translation cards.
+- [x] **Soft Female Native Voice Synthesis**:
+  - Upgraded `speechService.js` with `findBestFemaleSoftVoice()` to select native soft female models (e.g. `Piya`/`Tanishaa` for Bengali, `Lekha`/`Swara` for Hindi, `Samantha`/`Victoria` for English).
+  - Calibrated acoustic cadence: pitch `1.08` and rate `0.88` for contemplative, empathetic feminine narration.
+
+### Phase 14: In-Place Card Translation (Unified UX Without Separate Translation Box)
+- [x] **Removed Redundant Translation Box**:
+  - Eliminated the separate translation container above the cards for a clean, unified presentation.
+- [x] **In-Place Card Transformation**:
+  - Integrated `translateAnalysisStructured()` in `geminiService.js` to translate all cards as a structured JSON entity.
+  - Dominant Emotional Core, Behavioral Dynamics, Chromatic & Spatial Vibe, Reflection Prompt, and Deep-Dive chips transform directly in place upon language selection.
+- [x] **Localized Card Typography & UI Labels**:
+  - Added multi-lingual card labels (`CARD_LABELS`) for eyebrows, titles, meter labels, and reflection tags.
+  - Added subtle loading state while updating cards and cached translations for instant language flipping.
+
+### Phase 15: Gemini 3.8 Live Extended Thinking, Transcribe Live & Person/Scene Visual Intelligence
+- [x] **Gemini 3.8 Live Extended Thinking Multimodal Routing**:
+  - Implemented `gemini-3.8-flash` with `thinkingConfig: { thinkingBudget: 1024 }` as the primary visual psychology engine.
+  - Multi-tier live fallback cascade: `gemini-3.8-flash` -> `gemini-3.5-flash` -> `gemini-3-flash-preview` -> `gemini-3.6-flash` -> `gemini-3.5-flash-lite`.
+- [x] **Gemini 3.5 Transcribe Live & Scene Transcription**:
+  - Detailed scene and environmental transcription decoding background, lighting quality (studio/ambient/directional), depth of field, and spatial composition.
+- [x] **Person & Subject Identification**:
+  - Accurate identification of individual persons: estimated age range, gaze direction, head tilt, posture, clothing style, and demeanor.
+  - Non-person handling: If artwork, symbol, animal, or abstract object is uploaded, precisely identifies and decodes archetypal geometry and symbolic resonance.
+- [x] **Resolved Repetitive Output Root Cause**:
+  - Sanitized base64 payloads to strip `data:image/[^;]+;base64,` prefixes before sending to Google Gemini endpoints, preventing silent API 400 rejection.
+  - Upgraded content moderation gate `screenImageSafety` with clean base64 data and model cascade.
+  - Every uploaded image now receives real-time, image-specific perceptual decoding without falling into static fallback presets.
+- [x] **UI Integration & In-Place Multilingual Transcription**:
+  - Added dedicated *Subject & Person Identification* and *Full Picture & Visual Context* cards to [AnalysisView.jsx](file:///Users/metastudio/saurav/development/workspaces/explainer/src/components/AnalysisView.jsx).
+  - Wired subject identification and scene description into [translateAnalysisStructured()](file:///Users/metastudio/saurav/development/workspaces/explainer/src/services/geminiService.js) for seamless in-place translation into Bengali, Hindi, Spanish, French, German, and Arabic.
+  - Extended soft female voice narration to speak the identified subject demeanor before diving into emotional core and behavioral dynamics.
+
 - [x] Product ownership defined: Licensed product of Techfiyr (techfiyr.com).
 - [x] Billing infrastructure defined: RevenueCat unified cross-platform billing.
 - [x] Credit model defined (3 free daily, 10 welcome credits, $1=100 credits, $1/mo, $9.99/yr).

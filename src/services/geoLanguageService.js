@@ -190,7 +190,11 @@ class GeoLanguageService {
   }
 
   getDetectedLanguage() {
-    return this.detectedInfo.language;
+    // If user has explicitly saved a preference, honor it; otherwise default strictly to English
+    if (this.detectedInfo && this.detectedInfo.isUserSelected) {
+      return this.detectedInfo.language;
+    }
+    return SUPPORTED_LANGUAGES[0];
   }
 
   getDetectedCountry() {

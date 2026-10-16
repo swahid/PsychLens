@@ -18,13 +18,130 @@ import {
   Share2,
   ShieldAlert,
   Compass,
+  UserCheck,
+  Image as ImageIcon,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { speechService } from '../services/speechService';
-import { askPsychologicalDeepDive, translateAnalysis } from '../services/geminiService';
+import { askPsychologicalDeepDive, translateAnalysis, translateAnalysisStructured } from '../services/geminiService';
 import { generateAndDownloadCard } from '../services/cardGenerator';
 import { adminService } from '../services/adminService';
 import { geoLanguageService, SUPPORTED_LANGUAGES } from '../services/geoLanguageService';
+
+const CARD_LABELS = {
+  English: {
+    subjectEyebrow: 'SUBJECT & PERSON IDENTIFICATION',
+    subjectTitle: 'Person Identification & Demeanor',
+    sceneEyebrow: 'SCENE & CONTEXT TRANSCRIPTION',
+    sceneTitle: 'Full Picture & Visual Context',
+    dominantEyebrow: 'DOMINANT EMOTIONAL CORE',
+    tensionLabel: 'Psychological Tension',
+    atmosphereLabel: 'Atmosphere',
+    energyLabel: 'Energy Level',
+    behaviorEyebrow: 'BEHAVIORAL DYNAMICS',
+    behaviorTitle: 'Body Language & Subconscious Cues',
+    colorEyebrow: 'CHROMATIC & SPATIAL VIBE',
+    colorTitle: 'Color & Composition Psychology',
+    reflectionLabel: 'Introspective Query',
+    deepDiveTitle: 'Explore Psychological Nuances:',
+  },
+  Bengali: {
+    subjectEyebrow: 'ব্যক্তি ও চরিত্র সনাক্তকরণ',
+    subjectTitle: 'ব্যক্তি সনাক্তকরণ ও শারীরিক ভাবভঙ্গি',
+    sceneEyebrow: 'দৃশ্য ও পারিপার্শ্বিক বিবরণ',
+    sceneTitle: 'সম্পূর্ণ ছবির দৃশ্য ও পারিপার্শ্বিক প্রেক্ষাপট',
+    dominantEyebrow: 'প্রধান মানসিক অনুভূতি',
+    tensionLabel: 'মনস্তাত্ত্বিক টানাপোড়েন',
+    atmosphereLabel: 'আবহ',
+    energyLabel: 'শক্তির মাত্রা',
+    behaviorEyebrow: 'আচরণগত সংকেত ও শরীরী ভাষা',
+    behaviorTitle: 'শরীরী ভাষা ও অবচেতন সংকেত',
+    colorEyebrow: 'রং ও পারিপার্শ্বিক আবহ',
+    colorTitle: 'শিল্পকলা ও রঙের মনস্তত্ত্ব',
+    reflectionLabel: 'আত্মচিন্তার প্রশ্ন',
+    deepDiveTitle: 'মনস্তাত্ত্বিক গভীরতা অন্বেষণ করুন:',
+  },
+  Hindi: {
+    subjectEyebrow: 'व्यक्ति एवं विषय की पहचान',
+    subjectTitle: 'व्यक्ति की पहचान एवं शारीरिक मुद्रा',
+    sceneEyebrow: 'दृश्य एवं परिवेश का विवरण',
+    sceneTitle: 'संपूर्ण चित्र एवं दृश्य संदर्भ',
+    dominantEyebrow: 'प्रमुख भावनात्मक केंद्र',
+    tensionLabel: 'मनोवैज्ञानिक तनाव',
+    atmosphereLabel: 'परिवेश',
+    energyLabel: 'ऊर्जा स्तर',
+    behaviorEyebrow: 'व्यवहार संबंधी गतिशीलता',
+    behaviorTitle: 'शारीरिक भाषा एवं अवचेतन संकेत',
+    colorEyebrow: 'रंग एवं स्थानिक परिवेश',
+    colorTitle: 'कला एवं रंग मनोविज्ञान',
+    reflectionLabel: 'चिंतन प्रश्न',
+    deepDiveTitle: 'मनोवैज्ञानिक सूक्ष्मताओं का अन्वेषण करें:',
+  },
+  Spanish: {
+    subjectEyebrow: 'IDENTIFICACIÓN DEL SUJETO',
+    subjectTitle: 'Identificación de la Persona y Porte',
+    sceneEyebrow: 'DESCRIPCIÓN DE LA ESCENA',
+    sceneTitle: 'Contexto Visual y Espacial',
+    dominantEyebrow: 'NÚCLEO EMOCIONAL DOMINANTE',
+    tensionLabel: 'Tensión Psicológica',
+    atmosphereLabel: 'Atmósfera',
+    energyLabel: 'Nivel de Energía',
+    behaviorEyebrow: 'DINÁMICA CONDUCTUAL',
+    behaviorTitle: 'Lenguaje Corporal y Señales Subconscientes',
+    colorEyebrow: 'VIBRA CROMÁTICA Y ESPACIAL',
+    colorTitle: 'Psicología del Color y Composición',
+    reflectionLabel: 'Consulta Introspectiva',
+    deepDiveTitle: 'Explorar Matices Psicológicos:',
+  },
+  French: {
+    subjectEyebrow: 'IDENTIFICATION DU SUJET',
+    subjectTitle: 'Identification de la Personne et Posture',
+    sceneEyebrow: 'TRANSCRIPTION DE LA SCÈNE',
+    sceneTitle: 'Contexte Visuel Global',
+    dominantEyebrow: 'CŒUR ÉMOTIONNEL DOMINANT',
+    tensionLabel: 'Tension Psychologique',
+    atmosphereLabel: 'Atmosphère',
+    energyLabel: "Niveau d'Énergie",
+    behaviorEyebrow: 'DYNAMIQUES COMPORTEMENTALES',
+    behaviorTitle: 'Langage Corporel et Signaux Subconscients',
+    colorEyebrow: 'AMBIANCE CHROMATIQUE ET SPATIALE',
+    colorTitle: 'Psychologie des Couleurs et de la Composition',
+    reflectionLabel: 'Interrogation Introspective',
+    deepDiveTitle: 'Explorer les Nuances Psychologiques :',
+  },
+  German: {
+    subjectEyebrow: 'SUBJEKT- & PERSONENIDENTIFIKATION',
+    subjectTitle: 'Personenerkennung & Auftreten',
+    sceneEyebrow: 'SZENENBESCHREIBUNG',
+    sceneTitle: 'Visueller Gesamtkontext',
+    dominantEyebrow: 'DOMINANTER EMOTIONALER KERN',
+    tensionLabel: 'Psychologische Spannung',
+    atmosphereLabel: 'Atmosphäre',
+    energyLabel: 'Energieniveau',
+    behaviorEyebrow: 'VERHALTENSDYNAMIK',
+    behaviorTitle: 'Körpersprache und Unterbewusste Signale',
+    colorEyebrow: 'FARB- UND RAUMATMOSPHÄRE',
+    colorTitle: 'Farb- und Kompositionspsychologie',
+    reflectionLabel: 'Introspektive Frage',
+    deepDiveTitle: 'Psychologische Nuancen Erkunden:',
+  },
+  Arabic: {
+    subjectEyebrow: 'تحديد الشخصية والموضوع',
+    subjectTitle: 'تحديد الشخص والهيئة البصرية',
+    sceneEyebrow: 'وصف المشهد والسياق البصري',
+    sceneTitle: 'تفاصيل الصورة والسياق الكامل',
+    dominantEyebrow: 'الجوهر العاطفي السائد',
+    tensionLabel: 'التوتر النفسي',
+    atmosphereLabel: 'الأجواء',
+    energyLabel: 'مستوى الطاقة',
+    behaviorEyebrow: 'ديناميكيات السلوك',
+    behaviorTitle: 'لغة الجسد والإشارات اللاواعية',
+    colorEyebrow: 'التأثير اللوني والمكاني',
+    colorTitle: 'سيكولوجية الألوان والتكوين الفني',
+    reflectionLabel: 'تساؤل استبطاني',
+    deepDiveTitle: 'استكشاف الفروق النفسية الدقيقة:',
+  },
+};
 
 export default function AnalysisView({
   imageObject,
@@ -38,11 +155,13 @@ export default function AnalysisView({
   const initialDetected = geoLanguageService.getDetectedLanguage();
   const detectedCountry = geoLanguageService.getDetectedCountry();
 
+  // Default strictly to English as requested
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(initialDetected.shortName);
-  const [selectedLangCode, setSelectedLangCode] = useState(initialDetected.code);
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [selectedLangCode, setSelectedLangCode] = useState('en-US');
   const [isTranslating, setIsTranslating] = useState(false);
-  const [translatedText, setTranslatedText] = useState(null);
+  // Cache of translated analysis objects keyed by language
+  const [translationsCache, setTranslationsCache] = useState({});
 
   // Deep dive interactive inquiries
   const [activeDeepDiveQuestion, setActiveDeepDiveQuestion] = useState(null);
@@ -50,26 +169,12 @@ export default function AnalysisView({
   const [isDeepDiveLoading, setIsDeepDiveLoading] = useState(false);
   const [isGeneratingCard, setIsGeneratingCard] = useState(false);
 
-  const fullNarrationText = `${analysis.mood?.primary || ''}. Atmosphere: ${analysis.mood?.atmosphere || ''}. Psychological subtext: ${analysis.psychologicalSubtext || ''} Artistic and color psychology: ${analysis.artisticPsychology || ''} Reflection question: ${analysis.reflectionPrompt || ''}`;
+  // Active data dynamically updates card contents depending on selected language
+  const activeData = (selectedLanguage !== 'English' && translationsCache[selectedLanguage])
+    ? translationsCache[selectedLanguage]
+    : analysis;
 
-  // Automatically translate if detected country natural language is not English
-  useEffect(() => {
-    if (initialDetected.shortName !== 'English') {
-      performAutoTranslation(initialDetected.shortName);
-    }
-  }, []);
-
-  const performAutoTranslation = async (langName) => {
-    setIsTranslating(true);
-    try {
-      const translated = await translateAnalysis(fullNarrationText, langName);
-      setTranslatedText(translated);
-    } catch (err) {
-      console.warn('Auto translation fallback:', err);
-    } finally {
-      setIsTranslating(false);
-    }
-  };
+  const currentLabels = CARD_LABELS[selectedLanguage] || CARD_LABELS.English;
 
   // Stop speech on unmount
   useEffect(() => {
@@ -84,11 +189,21 @@ export default function AnalysisView({
       setIsPlayingAudio(false);
     } else {
       setIsPlayingAudio(true);
-      const textToSpeak = translatedText || fullNarrationText;
+      const textToSpeak = [
+        activeData.subjectIdentification ? `${activeData.subjectIdentification}.` : '',
+        activeData.mood?.primary ? `${activeData.mood.primary}.` : '',
+        activeData.mood?.atmosphere ? `${currentLabels.atmosphereLabel}: ${activeData.mood.atmosphere}.` : '',
+        activeData.psychologicalSubtext || '',
+        activeData.artisticPsychology || '',
+        activeData.reflectionPrompt || '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       speechService.speak(textToSpeak, {
         lang: selectedLangCode,
-        rate: 0.92,
-        pitch: 1.0,
+        rate: 0.88, // soft, contemplative pace
+        pitch: 1.08, // soft feminine warm tone
         onEnd: () => setIsPlayingAudio(false),
         onError: () => setIsPlayingAudio(false),
       });
@@ -102,16 +217,29 @@ export default function AnalysisView({
     setSelectedLangCode(targetObj.code);
     geoLanguageService.setPreferredLanguage(targetObj.shortName);
 
+    if (isPlayingAudio) {
+      speechService.stop();
+      setIsPlayingAudio(false);
+    }
+
     if (targetObj.shortName === 'English') {
-      setTranslatedText(null);
       return;
     }
+
+    // Use cached translation if already fetched
+    if (translationsCache[targetObj.shortName]) {
+      return;
+    }
+
     setIsTranslating(true);
     try {
-      const translated = await translateAnalysis(fullNarrationText, targetObj.shortName);
-      setTranslatedText(translated);
+      const translatedObj = await translateAnalysisStructured(analysis, targetObj.shortName);
+      setTranslationsCache((prev) => ({
+        ...prev,
+        [targetObj.shortName]: translatedObj,
+      }));
     } catch (err) {
-      console.error(err);
+      console.error('Translation error:', err);
     } finally {
       setIsTranslating(false);
     }
@@ -163,10 +291,10 @@ export default function AnalysisView({
             id="btn-voice-narration"
             className={`btn-secondary ${isPlayingAudio ? 'active-audio' : ''}`}
             onClick={toggleSpeech}
-            title="Listen to psychological reading"
+            title={`Listen in ${selectedLanguage} (Soft Female Voice)`}
           >
             {isPlayingAudio ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            <span>{isPlayingAudio ? 'Mute Voice' : 'Voice Play'}</span>
+            <span>{isPlayingAudio ? 'Mute Voice' : selectedLanguage !== 'English' ? `Voice Play (${selectedLanguage})` : 'Voice Play'}</span>
             {isPlayingAudio && <span className="sound-wave" />}
           </button>
 
@@ -275,40 +403,73 @@ export default function AnalysisView({
             </div>
           )}
 
-          {/* Translation Preview (if active) */}
-          {translatedText && (
-            <div className="translated-box glass-card">
-              <div className="translated-header">
-                <Languages size={16} color="#67e8f9" />
-                <span className="font-display">Translation ({selectedLanguage})</span>
-              </div>
-              <p className="translated-text">{translatedText}</p>
+          {/* Card Translation Loading Indicator */}
+          {isTranslating && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 18px', background: '#eef2ff', border: '1px solid #c7d2fe', color: '#4338ca', borderRadius: '12px', marginBottom: '16px', fontSize: '0.88rem', fontWeight: 600 }}>
+              <span className="mini-spinner" />
+              <span>Translating card contents to {selectedLanguage}...</span>
             </div>
           )}
 
-          {/* Mood & Atmosphere Card */}
+          {/* 1. Subject & Person Identification Card */}
+          {activeData.subjectIdentification && (
+            <div className="glass-card section-card">
+              <div className="section-header">
+                <div className="section-icon-badge badge-cyan-glow">
+                  <UserCheck size={20} color="#06b6d4" />
+                </div>
+                <div>
+                  <span className="section-eyebrow">{currentLabels.subjectEyebrow}</span>
+                  <h3 className="section-title font-display">{currentLabels.subjectTitle}</h3>
+                </div>
+              </div>
+              <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>
+                {activeData.subjectIdentification}
+              </p>
+            </div>
+          )}
+
+          {/* 2. Full Picture & Visual Context Card */}
+          {activeData.sceneDescription && (
+            <div className="glass-card section-card">
+              <div className="section-header">
+                <div className="section-icon-badge badge-indigo-glow">
+                  <ImageIcon size={20} color="#6366f1" />
+                </div>
+                <div>
+                  <span className="section-eyebrow">{currentLabels.sceneEyebrow}</span>
+                  <h3 className="section-title font-display">{currentLabels.sceneTitle}</h3>
+                </div>
+              </div>
+              <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>
+                {activeData.sceneDescription}
+              </p>
+            </div>
+          )}
+
+          {/* 3. Mood & Atmosphere Card */}
           <div className="glass-card section-card">
             <div className="section-header">
               <div className="section-icon-badge badge-purple-glow">
                 <Sparkles size={20} color="#c4b5fd" />
               </div>
               <div>
-                <span className="section-eyebrow">DOMINANT EMOTIONAL CORE</span>
+                <span className="section-eyebrow">{currentLabels.dominantEyebrow}</span>
                 <h3 className="section-title font-display gradient-text">
-                  {analysis.mood?.primary || 'Introspective Contemplation'}
+                  {activeData.mood?.primary || 'Introspective Contemplation'}
                 </h3>
               </div>
             </div>
 
-            <p className="overview-text">{analysis.overview}</p>
+            <p className="overview-text" style={{ fontSize: '0.96rem', lineHeight: '1.7' }}>{activeData.overview}</p>
 
             <div className="mood-meters-grid">
               <div className="meter-card">
                 <div className="meter-label-row">
                   <span className="meter-label">
-                    <Flame size={14} color="#f43f5e" /> Psychological Tension
+                    <Flame size={14} color="#f43f5e" /> {currentLabels.tensionLabel}
                   </span>
-                  <span className="meter-val">{analysis.mood?.tensionScore || 5}/10</span>
+                  <span className="meter-val">{activeData.mood?.tensionScore || 5}/10</span>
                 </div>
                 <div className="meter-track">
                   <div
@@ -328,12 +489,12 @@ export default function AnalysisView({
 
               <div className="meter-card">
                 <div className="meter-label-row">
-                  <span className="meter-label">Atmosphere</span>
-                  <span className="badge badge-pink">{analysis.mood?.atmosphere || 'Reflective'}</span>
+                  <span className="meter-label">{currentLabels.atmosphereLabel}</span>
+                  <span className="badge badge-pink">{activeData.mood?.atmosphere || 'Reflective'}</span>
                 </div>
                 <div className="meter-label-row mt-2">
-                  <span className="meter-label">Energy Level</span>
-                  <span className="badge badge-cyan">{analysis.mood?.energyLevel || 'Moderate'}</span>
+                  <span className="meter-label">{currentLabels.energyLabel}</span>
+                  <span className="badge badge-cyan">{activeData.mood?.energyLevel || 'Moderate'}</span>
                 </div>
               </div>
             </div>
@@ -346,11 +507,11 @@ export default function AnalysisView({
                 <Brain size={20} color="#818cf8" />
               </div>
               <div>
-                <span className="section-eyebrow">BEHAVIORAL DYNAMICS</span>
-                <h3 className="section-title font-display">Body Language & Subconscious Cues</h3>
+                <span className="section-eyebrow">{currentLabels.behaviorEyebrow}</span>
+                <h3 className="section-title font-display">{currentLabels.behaviorTitle}</h3>
               </div>
             </div>
-            <p className="subtext-content">{analysis.psychologicalSubtext}</p>
+            <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>{activeData.psychologicalSubtext}</p>
           </div>
 
           {/* Artistic & Color Psychology Card */}
@@ -360,18 +521,18 @@ export default function AnalysisView({
                 <Palette size={20} color="#67e8f9" />
               </div>
               <div>
-                <span className="section-eyebrow">CHROMATIC & SPATIAL VIBE</span>
-                <h3 className="section-title font-display">Color & Composition Psychology</h3>
+                <span className="section-eyebrow">{currentLabels.colorEyebrow}</span>
+                <h3 className="section-title font-display">{currentLabels.colorTitle}</h3>
               </div>
             </div>
-            <p className="subtext-content">{analysis.artisticPsychology}</p>
+            <p className="subtext-content" style={{ fontSize: '0.96rem', lineHeight: '1.75' }}>{activeData.artisticPsychology}</p>
           </div>
 
           {/* Reflection Prompt */}
-          {analysis.reflectionPrompt && (
+          {activeData.reflectionPrompt && (
             <div className="reflection-card glass-card">
-              <span className="reflection-label font-display">Introspective Query</span>
-              <p className="reflection-quote">"{analysis.reflectionPrompt}"</p>
+              <span className="reflection-label font-display">{currentLabels.reflectionLabel}</span>
+              <p className="reflection-quote" style={{ fontSize: '1.05rem', lineHeight: '1.65' }}>"{activeData.reflectionPrompt}"</p>
             </div>
           )}
 
@@ -379,10 +540,10 @@ export default function AnalysisView({
           <div className="deep-dive-card glass-card">
             <div className="deep-dive-header">
               <Eye size={18} color="#ec4899" />
-              <h4 className="font-display">Explore Psychological Nuances:</h4>
+              <h4 className="font-display">{currentLabels.deepDiveTitle}</h4>
             </div>
             <div className="chips-cloud">
-              {(analysis.deepDiveChips || []).map((chip, idx) => (
+              {(activeData.deepDiveChips || []).map((chip, idx) => (
                 <button
                   key={idx}
                   className={`chip-btn ${activeDeepDiveQuestion === chip ? 'active' : ''}`}

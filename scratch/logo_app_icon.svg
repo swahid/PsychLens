@@ -1,0 +1,45 @@
+<svg width="512" height="512" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F8FAFC" />
+    </linearGradient>
+    <linearGradient id="irisGradCard" x1="36" y1="36" x2="92" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="45%" stop-color="#3730A3" />
+      <stop offset="100%" stop-color="#1E1B4B" />
+    </linearGradient>
+    <radialGradient id="irisGlowCard" cx="64" cy="64" r="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818CF8" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#4F46E5" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0" />
+    </radialGradient>
+    <filter id="iconCardShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#0F172A" flood-opacity="0.1" />
+    </filter>
+  </defs>
+
+  <!-- App Squircle Card Background -->
+  <rect width="128" height="128" rx="28" fill="url(#bgGrad)" stroke="#E2E8F0" stroke-width="1.5" />
+
+  <!-- Centered mark with safe margin -->
+  <g transform="translate(14, 14)" filter="url(#iconCardShadow)">
+    <circle cx="50" cy="50" r="46" stroke="#0F172A" stroke-width="4.8" fill="#FFFFFF" />
+    <path d="M50 4 C62 4, 73 10, 81 19 L64 36" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M81 19 C90 27, 96 38, 96 50 L73 54" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M96 50 C96 62, 90 73, 81 81 L60 67" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M81 81 C73 90, 62 96, 50 96 L46 73" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M50 96 C38 96, 27 90, 19 81 L36 64" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M19 81 C10 73, 4 62, 4 50 L27 46" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M4 50 C4 38, 10 27, 19 19 L40 33" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M19 19 C27 10, 38 4, 50 4 L54 27" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+
+    <circle cx="50" cy="50" r="23" fill="url(#irisGradCard)" stroke="#0F172A" stroke-width="2.6" />
+    <circle cx="50" cy="50" r="23" fill="url(#irisGlowCard)" />
+    <circle cx="50" cy="50" r="15" fill="#0F172A" />
+
+    <path d="M50 38 Q50 50 38 50 Q50 50 50 62 Q50 50 62 50 Q50 50 50 38 Z" fill="#A5B4FC" />
+    <path d="M43 43 Q50 50 57 43 Q50 50 57 57 Q50 50 43 57 Q50 50 43 43 Z" fill="#E0E7FF" opacity="0.9" />
+    <circle cx="44" cy="44" r="2" fill="#FFFFFF" opacity="0.95" />
+  </g>
+</svg>

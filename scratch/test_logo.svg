@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="psychIrisGradient" x1="30" y1="30" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#3730A3" />
+      <stop offset="100%" stop-color="#1E1B4B" />
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#4F46E5" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Centered container with safe margins (center at 60,60) -->
+  <g transform="translate(10, 10)">
+    <!-- Outer Lens Rim -->
+    <circle cx="50" cy="50" r="46" stroke="#0F172A" stroke-width="5" fill="#FFFFFF" filter="url(#softGlow)" />
+
+    <!-- Camera Aperture Blades (Golden spiral visual psychology lens) -->
+    <path d="M50 4 C62 4, 73 10, 81 19 L64 36" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M81 19 C90 27, 96 38, 96 50 L73 54" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M96 50 C96 62, 90 73, 81 81 L60 67" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M81 81 C73 90, 62 96, 50 96 L46 73" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M50 96 C38 96, 27 90, 19 81 L36 64" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M19 81 C10 73, 4 62, 4 50 L27 46" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M4 50 C4 38, 10 27, 19 19 L40 33" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+    <path d="M19 19 C27 10, 38 4, 50 4 L54 27" stroke="#0F172A" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Eye Iris Frame (Introspective perception ring) -->
+    <circle cx="50" cy="50" r="23" fill="url(#psychIrisGradient)" stroke="#0F172A" stroke-width="2.8" />
+
+    <!-- Inner Lens Pupil -->
+    <circle cx="50" cy="50" r="15" fill="#0F172A" />
+
+    <!-- Mind & Emotional Spark of Perception -->
+    <path d="M50 38 Q50 50 38 50 Q50 50 50 62 Q50 50 62 50 Q50 50 50 38 Z" fill="#A5B4FC" />
+    <path d="M43 43 Q50 50 57 43 Q50 50 57 57 Q50 50 43 57 Q50 50 43 43 Z" fill="#C7D2FE" opacity="0.9" />
+
+    <!-- Optical Glint Reflection -->
+    <circle cx="44" cy="44" r="2.2" fill="#FFFFFF" opacity="0.95" />
+  </g>
+</svg>
