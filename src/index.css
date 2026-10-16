@@ -1,0 +1,449 @@
+/* ==========================================================================
+   PsychLens — Natural, Realistic Human-Centric Editorial Design System
+   Licensed Product of Techfiyr (techfiyr.com)
+   Clean, Calm, High-Contrast White Theme (Apple Minimal / Notion / Kinfolk)
+   ========================================================================== */
+
+:root {
+  --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', var(--font-main);
+
+  /* Background Palette: Serene, Warm Off-Whites */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-accent-soft: #f8fafc;
+  --bg-card: #ffffff;
+
+  /* Border Outlines */
+  --border-subtle: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-focus: #0f172a;
+  --border-accent: #cbd5e1;
+
+  /* Typography: Slate Blacks and Editorial Charcoals */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  /* Natural, Organic Accents */
+  --accent-primary: #0f172a;       /* Deep Slate Obsidian */
+  --accent-primary-hover: #1e293b;
+  --accent-indigo: #4f46e5;
+  --accent-sage: #059669;
+  --accent-amber: #d97706;
+  --accent-rose: #e11d48;
+  --accent-sky: #0284c7;
+
+  /* Shadows: Soft, Feathered Editorial Elevations */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 9999px;
+
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset & Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Custom Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Typography Helpers */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Clean Editorial Text Treatment */
+.editorial-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+}
+
+/* Natural Theme Card */
+.white-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+}
+
+.white-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.09);
+}
+
+/* Button Styles: Natural & High Contrast */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.22);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.88rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  color: var(--text-primary);
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
+}
+
+.btn-secondary.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.btn-icon:hover {
+  background: #f1f5f9;
+  color: var(--text-primary);
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* Refined Understated Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-slate {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.badge-sage {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-amber {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-rose {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+.badge-sky {
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.badge-indigo {
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+/* Subtle Live Indicator */
+.live-indicator {
+  width: 7px;
+  height: 7px;
+  background: #059669;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+}
+
+/* Clean Shimmer Loading */
+@keyframes naturalShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-loading {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: naturalShimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Responsive Container */
+.container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 24px;
+  }
+}
+
+/* ==========================================================================
+   Modal System (Fixed Overlay, Blur Backdrop, Centered Dialog)
+   ========================================================================== */
+.modal-overlay,
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.modal-container,
+.modal-content {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+  z-index: 100000;
+  animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  margin: auto;
+  box-sizing: border-box;
+}
+
+@keyframes modalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+}
+
+.btn-outline:hover {
+  background: #f8fafc;
+  border-color: #0f172a;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   PWA & Mobile Navigation System
+   ========================================================================== */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.05);
+    z-index: 900;
+    align-items: center;
+    justify-content: space-around;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: var(--transition);
+    position: relative;
+    flex: 1;
+    max-width: 90px;
+  }
+
+  .mobile-nav-item.active {
+    color: #0f172a;
+    background: #f1f5f9;
+  }
+
+  .mobile-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 18px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.62rem;
+    padding: 1px 5px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  /* Admin Dashboard Mobile Adaptations */
+  .admin-layout-flex {
+    flex-direction: column !important;
+  }
+
+  .admin-sidebar-nav {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 8px 12px !important;
+    white-space: nowrap !important;
+  }
+
+  .admin-sidebar-nav button {
+    flex-shrink: 0 !important;
+    padding: 8px 12px !important;
+  }
+}
